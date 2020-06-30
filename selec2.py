@@ -37,6 +37,9 @@ def grab_audio(tiempo, user):
     audio.close() # PJHB Se cierra archivo de audio
     enviar_audio = bytearray(leer_audio) #PJHB Se crea un arreglo de bytes en el cual se colocara cada byte del audio
     topic = "comandos/03/201503502"
+    topic = "comandos/03/201513732"
+    topic = "comandos/03/201503502"
+    topic = "comandos/03/201612696"
     #topic = "audio/03/"+user #LGHM construccion del topic 
     logging.debug(topic)
     publishData(str(topic),enviar_audio) #LGHM publicando en el topic deseado
@@ -53,7 +56,7 @@ def aver(var): #PJHB Creacion de funcion para guardar el estado del FTR
 def alive2():
     while True:
         tramaFTR = (b'\x04' + b"$"+ b"201503502" + b"$") #PJHB Concatena el comando más el usuario
-        pinulito = tramaFTR
+        pinulito = tramaFTR #PJHB Redundancia para incluirla a la trama a enviar
         publishData("comandos/03/201503502", pinulito) #PJHB publica en el topic deseado
         time.sleep(ALIVE_PERIOD) #PJHB Temporizador para enviar cada 2 seg.
 
