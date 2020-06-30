@@ -1,4 +1,4 @@
-'''from Crypto.Cipher import *
+from Crypto.Cipher import *
 import hashlib
 password = "mypassword".encode()
 key  = hashlib.sha256(password).digest()
@@ -15,4 +15,4 @@ mode  = AES.MODE_CBC
 cipher = AES.new(key, mod, IV)
 message= "entrada mensaje"
 padded_message = pad_message(message)
-encrypted_message  = cipher.encrypt(padded_message) '''
+encrypted_message  = cipher.encrypt(padded_message)
