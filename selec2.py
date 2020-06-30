@@ -7,6 +7,8 @@ import time
 import logging
 import os
 import sys
+from clemisormetodo import *
+from metodoreceptor import *
 
 siome = ''
 gallo = 'm'
@@ -27,22 +29,20 @@ def on_publish(client, userdata, mid):
     publishText = "Publicacion satisfactoria"
     logging.debug(publishText)
 
-def rep_audio(): #LGHM Funcion para hilo de reproducion de audio
+def rep_audio(): #AAMS Funcion para hilo de reproducion de audio
     os.system('aplay Recibido.wav') #PJHB reproduce el audio luego de recibirlo
 
 def grab_audio(tiempo, user):
     os.system('arecord -d '+str(tiempo)+' -f U8 -r 8000 prueba.wav')
     audio = open("prueba.wav", "rb") #PJHB Se abre el archivo de audio a enviar en bytes crudos
-    leer_audio = audio.read() #PJHB Lectura de la información del archivo de audio
+    #leer_audio = audio.read() #PJHB Lectura de la información del archivo de audio
+    mamapinga(audio)#GPCG mamapingueando el audio
     audio.close() # PJHB Se cierra archivo de audio
-    enviar_audio = bytearray(leer_audio) #PJHB Se crea un arreglo de bytes en el cual se colocara cada byte del audio
-    topic = "comandos/03/201503502"
-    topic = "comandos/03/201513732"
-    topic = "comandos/03/201503502"
-    topic = "comandos/03/201612696"
-    #topic = "audio/03/"+user #LGHM construccion del topic 
+    #enviar_audio = bytearray(leer_audio) #PJHB Se crea un arreglo de bytes en el cual se colocara cada byte del audio
+    #topic = "comandos/03/201503502"
+    #topic = "audio/03/"+user #AAMS construccion del topic 
     logging.debug(topic)
-    publishData(str(topic),enviar_audio) #LGHM publicando en el topic deseado
+    #publishData(str(topic),enviar_audio) #AAMS publicando en el topic deseado
     logging.debug("audio enviado al usuario") #PJHB Se indica que ya se envió el audio
 
 def aver(var): #PJHB Creacion de funcion para guardar el estado del FTR
@@ -56,7 +56,7 @@ def aver(var): #PJHB Creacion de funcion para guardar el estado del FTR
 def alive2():
     while True:
         tramaFTR = (b'\x04' + b"$"+ b"201503502" + b"$") #PJHB Concatena el comando más el usuario
-        pinulito = tramaFTR #PJHB Redundancia para incluirla a la trama a enviar
+        pinulito = tramaFTR
         publishData("comandos/03/201503502", pinulito) #PJHB publica en el topic deseado
         time.sleep(ALIVE_PERIOD) #PJHB Temporizador para enviar cada 2 seg.
 
@@ -82,7 +82,7 @@ def last_alive(): #PJHB
 
 def on_message(client, userdata, msg):
     #Se muestra en pantalla informacion que ha llegado
-    papi = str(msg.topic)
+    papi = msg.payload
     chulo = str(msg.payload)
     siome = msg.payload
     if siome == b'\x06$':
@@ -91,21 +91,21 @@ def on_message(client, userdata, msg):
             aver("1")
             seleccion.aver2(1)
 
-    if papi[0]=="a":  #GPCG si es audio proceder a reproducirlo
-        logging.info("Ha llegado el audio al topic: " + str(msg.topic))
-        logging.info(papi.split('/')[2]+': Reproduciendo audio...')
-        logging.info("Reproduciendo: ") 
-        data = msg.payload #PJHB Se asigna a la variable data la informacion entrante
-        file = open("Recibido.wav", "wb") #PJHB Crea archivo de audio
-        recibir_audio = file.write(data) #PJHB se sobre escribe el archivo de audio
-        file.close() #PJHB se cierra el archivo de audio
-        t3 = threading.Thread(name = 'Escuchando', #LGHM hilo para escuchar el audio y seguir programa principal
+    if papi.split(b"$")[0]== b"\x02":  #GPCG si es audio proceder a reproducirlo
+        logging.info("Ha llegado el audio:")
+        #logging.info("Reproduciendo: ") 
+        #data = msg.payload #PJHB Se asigna a la variable data la informacion entrante
+        #file = open("Recibido.wav", "wb") #PJHB Crea archivo de audio
+        #recibir_audio = file.write(data) #PJHB se sobre escribe el archivo de audio
+        #file.close() #PJHB se cierra el archivo de audio
+        recibeping()
+        t3 = threading.Thread(name = 'Escuchando', #AAMS hilo para escuchar el audio y seguir programa principal
                         target = rep_audio,
                         args = (),
                         daemon = True
                         )
         t3.start()
-    else: #LGHM si es texto tipo usuario o sala procede normalmente
+    else: #AAMS si es texto tipo usuario o sala procede normalmente
         logging.info("Ha llegado el mensaje al topic: " + str(msg.topic))
         logging.info("El contenido del mensaje es: " + str(msg.payload))        
         wenas = str(msg.topic) 
@@ -156,27 +156,27 @@ class seleccion(object): #GPCG clase para seleccion y envio de datos
         logging.debug(self.sel)
         #nuevo = input("1) Usuario\n2) Sala\nSeleccionar: ")
         if self.sel == str(1) :
-            nuevo = input("1) Usuario\n2) Sala\nSeleccionar: ")    #LGHM seleccionar si usuario o sala
+            nuevo = input("1) Usuario\n2) Sala\nSeleccionar: ")    #AAMS seleccionar si usuario o sala
             if nuevo == str(1):
-                user = input("Usuario destino: ") #LGHM escribir el carnet del usuario destino
+                user = input("Usuario destino: ") #AAMS escribir el carnet del usuario destino
                 mensaje = input("Escriba mensaje: ")
-                topic = "usuarios/03/"+user #LGHM construccion del topic 
+                topic = "usuarios/03/"+user #AAMS construccion del topic 
                 logging.debug(topic)
-                publishData(str(topic),mensaje) #LGHM publicando en el topic deseado
+                publishData(str(topic),mensaje) #AAMS publicando en el topic deseado
                 logging.debug("mensaje enviado al usuario")
-            elif nuevo == str(2): #LGHM Si la eleccion fue una sala
+            elif nuevo == str(2): #AAMS Si la eleccion fue una sala
                 sala = input("Sala destino: ")
                 mensaje = input("Escriba mensaje: ")
-                topic = "salas/03/"+sala #LGHM construccion del topic 
+                topic = "salas/03/"+sala #AAMS construccion del topic 
                 logging.info(topic)
-                publishData(str(topic),mensaje) #LGHM publicando en el topic deseado
+                publishData(str(topic),mensaje) #AAMS publicando en el topic deseado
                 logging.info("mensaje enviado a la sala")                
             else: logging.info("Accion no soportada")        
         elif self.sel == str(2) :
-            nuevo = input("1) Usuario\n2) Sala\nSeleccionar: ") #LGHM seleccionar si usuario o sala
+            nuevo = input("1) Usuario\n2) Sala\nSeleccionar: ") #AAMS seleccionar si usuario o sala
             if nuevo == str(1):
-                user = input("Usuario destino: ") #LGHM escribir el carnet del usuario destino
-                tiempo = str(input("Duracion de grabacion [s]: ")) #LGHM agregar duracion en segundos 
+                user = input("Usuario destino: ") #AAMS escribir el carnet del usuario destino
+                tiempo = str(input("Duracion de grabacion [s]: ")) #AAMS agregar duracion en segundos 
                 #biuser = bytes(usr, "utf8") #PJHB Convierte la informacion del usuario a bytes
                 tramaFTR = (b'\x03' + b"$"+ b"201503502" + b"$") #PJHB Concatena el comando más el usuario
                 #logging.info(tramaFTR)
@@ -185,10 +185,10 @@ class seleccion(object): #GPCG clase para seleccion y envio de datos
                 dorada = str(patitos.yawey)
                 print("pofavo: " + dorada)
                 if dorada == "1":
-                    tiempo = str(input("Duracion de grabacion [s]: ")) #LGHM agregar duracion en segundos 
+                    tiempo = str(input("Duracion de grabacion [s]: ")) #AAMS agregar duracion en segundos 
                     logging.debug("audio enviado al usuario") #PJHB Se indica que ya se envió el audio
                     t = str(tiempo) 
-                    t5 = threading.Thread(name = 'grabando', #LGHM hilo para grabar 
+                    t5 = threading.Thread(name = 'grabando', #AAMS hilo para grabar 
                             target = grab_audio,
                             args = (t,user),
                             daemon = True
@@ -197,14 +197,14 @@ class seleccion(object): #GPCG clase para seleccion y envio de datos
                 else:
                     print("Serivdor desconectado")
 
-            elif nuevo == str(2): #LGHM Si la eleccion fue una sala
+            elif nuevo == str(2): #AAMS Si la eleccion fue una sala
                 sala = input("Sala destino: ")
-                tiempo = str(input("Duracion de grabacion [s]: ")) #LGHM agregar duracion en segundos 
+                tiempo = str(input("Duracion de grabacion [s]: ")) #AAMS agregar duracion en segundos 
                 biuser = bytes(user, "utf8") #PJHB Convierte la informacion del usuario a bytes
                 tramaFTR = (COMMAND_FTR + biuser) #PJHB Concatena el comando más el usuario
                 publishData(str(topic+user), tramaFTR) #PJHB publica en el topic deseado                
                 t = str(tiempo)
-                t6 = threading.Thread(name = 'grabando2', #LGHM hilo para grabar 
+                t6 = threading.Thread(name = 'grabando2', #AAMS hilo para grabar 
                         target = grab_audio,
                         args = (t,sala),
                         daemon = True
